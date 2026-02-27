@@ -1,0 +1,14 @@
+#!/bin/bash
+# Wrapper script for jules CLI using uv venv
+# This script activates the virtual environment and runs jules
+
+PROJECT_DIR="/Users/fanioz/code/julescli"
+JULES_EXEC="$PROJECT_DIR/.venv/bin/jules"
+
+if [ -f "$JULES_EXEC" ]; then
+    exec "$JULES_EXEC" "$@"
+else
+    echo "Error: jules not found in .venv at $JULES_EXEC" >&2
+    echo "Run: cd $PROJECT_DIR && uv pip install -e ." >&2
+    exit 1
+fi

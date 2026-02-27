@@ -132,3 +132,7 @@ Thumbs.db
 
 # CLI wrapper scripts (generated)
 jules
+
+# Virtual environments
+.venv/
+venv/
