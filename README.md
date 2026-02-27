@@ -20,7 +20,7 @@
 ### Quick Install (One-Liner) ⭐
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/yourusername/jules-cli/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/fanioz/jules-cli/main/install.sh | bash
 ```
 
 This will:
@@ -43,7 +43,7 @@ This will:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone the repository
-git clone https://github.com/yourusername/jules-cli.git
+git clone https://github.com/fanioz/jules-cli.git
 cd jules-cli
 
 # Install in development mode
@@ -60,7 +60,7 @@ ln -sf "$(pwd)/jules-uv" ~/.local/bin/jules
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jules-cli.git
+git clone https://github.com/fanioz/jules-cli.git
 cd jules-cli
 
 # Install in development mode
