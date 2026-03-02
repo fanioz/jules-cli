@@ -13,6 +13,7 @@ from jules_cli.constants import (
     ACTIVITIES_ENDPOINT,
     MESSAGES_ENDPOINT,
     SESSION_APPROVE_ENDPOINT,
+    SESSION_DELETE_ENDPOINT,
     SESSION_DETAIL_ENDPOINT,
     SESSIONS_ENDPOINT,
     SOURCES_ENDPOINT,
@@ -71,7 +72,7 @@ class JulesAPIClient:
         Make an HTTP request to the API.
 
         Args:
-            method: HTTP method (GET, POST, etc.)
+            method: HTTP method (GET, POST, DELETE, etc.)
             endpoint: API endpoint path
             params: Query parameters
             json: JSON body for POST requests
@@ -125,6 +126,11 @@ class JulesAPIClient:
 
             # Return parsed JSON for successful responses
             response.raise_for_status()
+
+            # Handle empty responses (e.g., DELETE, sendMessage, approvePlan)
+            if not response.text or not response.text.strip():
+                return {}
+
             return response.json()
 
         except requests.exceptions.Timeout as e:
@@ -148,13 +154,25 @@ class JulesAPIClient:
         """
         return self._make_request("GET", SOURCES_ENDPOINT, params=params)
 
-    def create_session(self, source_id: str, **kwargs) -> dict:
+    def create_session(
+        self,
+        prompt: str,
+        title: Optional[str] = None,
+        source: Optional[str] = None,
+        starting_branch: Optional[str] = None,
+        require_plan_approval: Optional[bool] = None,
+        automation_mode: Optional[str] = None,
+    ) -> dict:
         """
         Create a new session.
 
         Args:
-            source_id: The source ID for the session
-            **kwargs: Additional parameters
+            prompt: The task description for Jules to execute (required)
+            title: Optional title for the session
+            source: Source resource name (e.g. "sources/github-myorg-myrepo")
+            starting_branch: Starting branch name (e.g. "main")
+            require_plan_approval: If True, plans require explicit approval
+            automation_mode: Automation mode (e.g. "AUTO_CREATE_PR")
 
         Returns:
             dict: Created session details
@@ -162,12 +180,33 @@ class JulesAPIClient:
         Raises:
             JulesAPIError: If the API request fails
         """
-        data = {"source_id": source_id, **kwargs}
+        data = {"prompt": prompt}
+
+        if title is not None:
+            data["title"] = title
+
+        if source is not None:
+            source_context = {"source": source}
+            if starting_branch is not None:
+                source_context["githubRepoContext"] = {
+                    "startingBranch": starting_branch
+                }
+            data["sourceContext"] = source_context
+
+        if require_plan_approval is not None:
+            data["requirePlanApproval"] = require_plan_approval
+
+        if automation_mode is not None:
+            data["automationMode"] = automation_mode
+
         return self._make_request("POST", SESSIONS_ENDPOINT, json=data)
 
     def list_sessions(self, **params) -> dict:
         """
         List sessions.
+
+        Args:
+            **params: Query parameters (pageSize, pageToken)
 
         Returns:
             dict: List of sessions
@@ -193,6 +232,22 @@ class JulesAPIClient:
         endpoint = SESSION_DETAIL_ENDPOINT.format(session_id=session_id)
         return self._make_request("GET", endpoint)
 
+    def delete_session(self, session_id: str) -> dict:
+        """
+        Delete a session.
+
+        Args:
+            session_id: The session ID
+
+        Returns:
+            dict: Empty response on success
+
+        Raises:
+            JulesAPIError: If the API request fails
+        """
+        endpoint = SESSION_DELETE_ENDPOINT.format(session_id=session_id)
+        return self._make_request("DELETE", endpoint)
+
     def approve_plan(self, session_id: str) -> dict:
         """
         Approve a pending plan.
@@ -207,7 +262,7 @@ class JulesAPIClient:
             JulesAPIError: If the API request fails
         """
         endpoint = SESSION_APPROVE_ENDPOINT.format(session_id=session_id)
-        return self._make_request("POST", endpoint)
+        return self._make_request("POST", endpoint, json={})
 
     def list_activities(self, session_id: str) -> dict:
         """
@@ -227,17 +282,17 @@ class JulesAPIClient:
 
     def send_message(self, session_id: str, message: str) -> dict:
         """
-        Send a message to the agent.
+        Send a message to a session.
 
         Args:
             session_id: The session ID
             message: The message to send
 
         Returns:
-            dict: Agent response
+            dict: SendMessageResponse (empty on success)
 
         Raises:
             JulesAPIError: If the API request fails
         """
         endpoint = MESSAGES_ENDPOINT.format(session_id=session_id)
-        return self._make_request("POST", endpoint, json={"message": message})
+        return self._make_request("POST", endpoint, json={"prompt": message})

@@ -99,11 +99,15 @@ def sessions(ctx):
 
 
 @sessions.command("create")
-@click.argument("source-id")
-@click.option("--parameter", "-p", multiple=True, help="Additional parameters (key=value)")
+@click.option("--prompt", "-p", required=True, help="Task description for Jules to execute")
+@click.option("--title", "-t", default=None, help="Optional title for the session")
+@click.option("--source", "-s", default=None, help="Source resource name (e.g. sources/github-myorg-myrepo)")
+@click.option("--branch", "-b", default=None, help="Starting branch name (e.g. main)")
+@click.option("--require-approval", is_flag=True, default=False, help="Require explicit plan approval before execution")
+@click.option("--auto-pr", is_flag=True, default=False, help="Automatically create pull requests when code changes are ready")
 @click.pass_context
-def sessions_create(ctx, source_id, parameter):
-    """Create a new session."""
+def sessions_create(ctx, prompt, title, source, branch, require_approval, auto_pr):
+    """Create a new session to start a coding task."""
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -113,14 +117,19 @@ def sessions_create(ctx, source_id, parameter):
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
-        # Parse additional parameters
         kwargs = {}
-        for param in parameter:
-            if "=" in param:
-                key, value = param.split("=", 1)
-                kwargs[key] = value
+        if title is not None:
+            kwargs["title"] = title
+        if source is not None:
+            kwargs["source"] = source
+        if branch is not None:
+            kwargs["starting_branch"] = branch
+        if require_approval:
+            kwargs["require_plan_approval"] = True
+        if auto_pr:
+            kwargs["automation_mode"] = "AUTO_CREATE_PR"
 
-        data = client.create_session(source_id, **kwargs)
+        data = client.create_session(prompt=prompt, **kwargs)
         output = formatter.format_session_details(data)
         click.echo(output)
 
@@ -132,9 +141,10 @@ def sessions_create(ctx, source_id, parameter):
 
 
 @sessions.command("list")
-@click.option("--status", help="Filter by status")
+@click.option("--page-size", type=int, default=None, help="Number of sessions to return (1-100, default: 30)")
+@click.option("--page-token", default=None, help="Page token from a previous list response")
 @click.pass_context
-def sessions_list(ctx, status):
+def sessions_list(ctx, page_size, page_token):
     """List sessions."""
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
@@ -146,8 +156,10 @@ def sessions_list(ctx, status):
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
         params = {}
-        if status:
-            params["status"] = status
+        if page_size is not None:
+            params["pageSize"] = page_size
+        if page_token is not None:
+            params["pageToken"] = page_token
 
         data = client.list_sessions(**params)
         output = formatter.format_sessions(data)
@@ -177,6 +189,33 @@ def sessions_get(ctx, session_id):
         data = client.get_session(session_id)
         output = formatter.format_session_details(data)
         click.echo(output)
+
+    except JulesAPIError as e:
+        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = formatter.format_error(str(e))
+        click.echo(error_output, err=True)
+        sys.exit(1)
+
+
+@sessions.command("delete")
+@click.argument("session-id")
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+@click.pass_context
+def sessions_delete(ctx, session_id, yes):
+    """Delete a session."""
+    api_key = ctx.obj.get("actual_api_key")
+    if not api_key:
+        click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
+        sys.exit(1)
+
+    if not yes:
+        click.confirm(f"Are you sure you want to delete session {session_id}?", abort=True)
+
+    try:
+        client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
+
+        client.delete_session(session_id)
+        click.echo(f"Session {session_id} deleted successfully.")
 
     except JulesAPIError as e:
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))

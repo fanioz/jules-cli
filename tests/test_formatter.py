@@ -62,7 +62,7 @@ class TestFormatSessions:
     def test_format_sessions_json_returns_valid_json(self):
         """format_sessions should return valid JSON when format is json."""
         formatter = OutputFormatter("json")
-        data = {"sessions": [{"id": "sess1", "status": "active"}]}
+        data = {"sessions": [{"id": "sess1", "state": "COMPLETED", "title": "Test Auth"}]}
 
         result = formatter.format_sessions(data)
 
@@ -72,13 +72,14 @@ class TestFormatSessions:
     def test_format_sessions_table_returns_table(self):
         """format_sessions should return a table when format is table."""
         formatter = OutputFormatter("table")
-        data = {"sessions": [{"id": "sess1", "status": "active"}]}
+        data = {"sessions": [{"id": "sess1", "state": "COMPLETED", "title": "Test Auth"}]}
 
         result = formatter.format_sessions(data)
 
         assert isinstance(result, str)
         assert "sess1" in result
-        assert "active" in result
+        assert "COMPLETED" in result
+        assert "Test Auth" in result
 
 
 class TestFormatSessionDetails:
@@ -87,7 +88,7 @@ class TestFormatSessionDetails:
     def test_format_session_details_json_returns_valid_json(self):
         """format_session_details should return valid JSON when format is json."""
         formatter = OutputFormatter("json")
-        data = {"session": {"id": "sess1", "status": "active"}}
+        data = {"id": "sess1", "state": "COMPLETED", "title": "Test"}
 
         result = formatter.format_session_details(data)
 
@@ -163,7 +164,7 @@ class TestJSONValidity:
         test_data = {
             "sources": {"sources": []},
             "sessions": {"sessions": []},
-            "details": {"session": {}},
+            "details": {"id": "sess1"},
             "activities": {"activities": []},
             "message": {"response": {}},
         }

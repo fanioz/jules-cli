@@ -9,6 +9,7 @@ from jules_cli.constants import (
     SOURCES_ENDPOINT,
     SESSIONS_ENDPOINT,
     SESSION_DETAIL_ENDPOINT,
+    SESSION_DELETE_ENDPOINT,
     SESSION_APPROVE_ENDPOINT,
     ACTIVITIES_ENDPOINT,
     MESSAGES_ENDPOINT,
@@ -60,11 +61,16 @@ class TestEndpoints:
         assert "/sessions/" in SESSION_DETAIL_ENDPOINT
         assert "{session_id}" in SESSION_DETAIL_ENDPOINT
 
+    def test_session_delete_endpoint_format(self):
+        """SESSION_DELETE_ENDPOINT should contain session_id placeholder."""
+        assert "/sessions/" in SESSION_DELETE_ENDPOINT
+        assert "{session_id}" in SESSION_DELETE_ENDPOINT
+
     def test_session_approve_endpoint_format(self):
-        """SESSION_APPROVE_ENDPOINT should contain session_id placeholder."""
+        """SESSION_APPROVE_ENDPOINT should use :approvePlan action."""
         assert "/sessions/" in SESSION_APPROVE_ENDPOINT
         assert "{session_id}" in SESSION_APPROVE_ENDPOINT
-        assert "/approve" in SESSION_APPROVE_ENDPOINT
+        assert ":approvePlan" in SESSION_APPROVE_ENDPOINT
 
     def test_activities_endpoint_format(self):
         """ACTIVITIES_ENDPOINT should contain session_id placeholder."""
@@ -73,7 +79,7 @@ class TestEndpoints:
         assert "/activities" in ACTIVITIES_ENDPOINT
 
     def test_messages_endpoint_format(self):
-        """MESSAGES_ENDPOINT should contain session_id placeholder."""
+        """MESSAGES_ENDPOINT should use :sendMessage action."""
         assert "/sessions/" in MESSAGES_ENDPOINT
         assert "{session_id}" in MESSAGES_ENDPOINT
-        assert "/messages" in MESSAGES_ENDPOINT
+        assert ":sendMessage" in MESSAGES_ENDPOINT

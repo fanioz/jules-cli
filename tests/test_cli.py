@@ -20,7 +20,7 @@ class TestCLIGroup:
         runner = CliRunner()
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.1.0" in result.output
+        assert "0.1.1" in result.output
 
     def test_help_flag(self):
         """--help flag should display help information."""
@@ -83,7 +83,8 @@ class TestMissingAPIKey:
 
         result = runner.invoke(cli, ["sources", "list"], env=env)
         # Should fail with error message about API key
-        assert result.exit_code != 0 or "API key" in result.output or "not found" in result.output
+        assert result.exit_code != 0
+        assert "API key" in result.output or "not found" in result.output
 
 
 class TestContextObject:

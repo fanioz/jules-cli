@@ -68,12 +68,12 @@ class OutputFormatter:
         if self.format == "table":
             if not sessions:
                 return "No sessions found."
-            headers = ["ID", "Source ID", "Status", "Created"]
+            headers = ["ID", "Title", "State", "Created"]
             rows = [[
                 s.get("id", ""),
-                s.get("source_id", ""),
-                s.get("status", ""),
-                s.get("created_at", ""),
+                s.get("title", ""),
+                s.get("state", ""),
+                s.get("createTime", ""),
             ] for s in sessions]
             return tabulate(rows, headers=headers, tablefmt="grid")
 
@@ -82,17 +82,21 @@ class OutputFormatter:
             return "No sessions found."
         lines = [f"Sessions ({len(sessions)}):"]
         for session in sessions:
-            status = session.get("status", "unknown")
+            state = session.get("state", "unknown")
+            title = session.get("title", "")
             sid = session.get("id", "unknown")
-            lines.append(f"  - [{status}] {sid}")
+            label = f"{title} ({sid})" if title else sid
+            lines.append(f"  - [{state}] {label}")
         return "\n".join(lines)
 
     def format_session_details(self, data: Dict[str, Any]) -> str:
         """
         Format session details.
 
+        The API returns a flat Session object (not nested under a 'session' key).
+
         Args:
-            data: API response data
+            data: API response data (Session object)
 
         Returns:
             str: Formatted output
@@ -100,10 +104,35 @@ class OutputFormatter:
         if self.format == "json":
             return json.dumps(data, indent=2)
 
-        session = data.get("session", {})
+        # Display key fields in a readable order
+        display_fields = [
+            ("name", "Name"),
+            ("id", "ID"),
+            ("title", "Title"),
+            ("state", "State"),
+            ("prompt", "Prompt"),
+            ("url", "URL"),
+            ("createTime", "Created"),
+            ("updateTime", "Updated"),
+        ]
+
         lines = ["Session Details:"]
-        for key, value in session.items():
-            lines.append(f"  {key}: {value}")
+        for field_key, label in display_fields:
+            value = data.get(field_key)
+            if value is not None:
+                lines.append(f"  {label}: {value}")
+
+        # Display outputs if present
+        outputs = data.get("outputs", [])
+        if outputs:
+            lines.append("  Outputs:")
+            for output in outputs:
+                pr = output.get("pullRequest", {})
+                if pr:
+                    lines.append(f"    PR: {pr.get('url', '')}")
+                    if pr.get("title"):
+                        lines.append(f"    PR Title: {pr['title']}")
+
         return "\n".join(lines)
 
     def format_activities(self, data: Dict[str, Any]) -> str:
@@ -152,6 +181,8 @@ class OutputFormatter:
         """
         Format agent message response.
 
+        The API returns an empty SendMessageResponse on success.
+
         Args:
             data: API response data
 
@@ -161,6 +192,10 @@ class OutputFormatter:
         if self.format == "json":
             return json.dumps(data, indent=2)
 
+        # The API returns empty response on success
+        if not data:
+            return "Message sent successfully."
+
         response = data.get("response", {})
         content = response.get("content", "")
 
@@ -168,7 +203,7 @@ class OutputFormatter:
             return f"Agent Response:\n{content}"
 
         # Plain format
-        return content if content else "No response content."
+        return content if content else "Message sent successfully."
 
     def format_error(self, message: str) -> str:
         """

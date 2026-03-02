@@ -15,8 +15,8 @@ class TestAgentSendCommand:
     def test_agent_send_with_message_argument(self):
         """agent send should send a message provided as argument."""
         responses.post(
-            f"{BASE_URL}/sessions/sess1/messages",
-            json={"response": {"content": "Hello back!"}},
+            f"{BASE_URL}/sessions/sess1:sendMessage",
+            json={},
             status=200,
         )
 
@@ -24,14 +24,14 @@ class TestAgentSendCommand:
         result = runner.invoke(cli, ["--api-key", "test-key", "agent", "send", "sess1", "Hello"])
 
         assert result.exit_code == 0
-        assert "Hello back!" in result.output or "Hello" in result.output
+        assert "sent" in result.output.lower() or "success" in result.output.lower()
 
     @responses.activate
     def test_agent_send_with_stdin(self):
         """agent send should read message from stdin when no argument."""
         responses.post(
-            f"{BASE_URL}/sessions/sess1/messages",
-            json={"response": {"content": "Response from stdin"}},
+            f"{BASE_URL}/sessions/sess1:sendMessage",
+            json={},
             status=200,
         )
 
@@ -39,14 +39,14 @@ class TestAgentSendCommand:
         result = runner.invoke(cli, ["--api-key", "test-key", "agent", "send", "sess1"], input="Message from stdin")
 
         assert result.exit_code == 0
-        assert "Response from stdin" in result.output or "stdin" in result.output
+        assert "sent" in result.output.lower() or "success" in result.output.lower()
 
     @responses.activate
     def test_agent_send_json_format(self):
         """agent send --format json should output valid JSON."""
         responses.post(
-            f"{BASE_URL}/sessions/sess1/messages",
-            json={"response": {"content": "Response"}},
+            f"{BASE_URL}/sessions/sess1:sendMessage",
+            json={},
             status=200,
         )
 
@@ -54,13 +54,13 @@ class TestAgentSendCommand:
         result = runner.invoke(cli, ["--api-key", "test-key", "--format", "json", "agent", "send", "sess1", "Hello"])
 
         assert result.exit_code == 0
-        assert '"response"' in result.output
+        assert "{}" in result.output
 
     @responses.activate
     def test_agent_send_error_handling(self):
         """agent send should handle API errors gracefully."""
         responses.post(
-            f"{BASE_URL}/sessions/sess1/messages",
+            f"{BASE_URL}/sessions/sess1:sendMessage",
             json={"error": "Session not found"},
             status=404,
         )

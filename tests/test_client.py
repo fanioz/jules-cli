@@ -78,6 +78,20 @@ class TestMakeRequest:
         assert result == {"created": True}
 
     @responses.activate
+    def test_successful_delete_request(self):
+        """_make_request should handle successful DELETE requests with empty body."""
+        responses.delete(
+            f"{BASE_URL}/test",
+            body="",
+            status=200,
+        )
+
+        client = JulesAPIClient(api_key="test-key", verbose=False)
+        result = client._make_request("DELETE", "/test")
+
+        assert result == {}
+
+    @responses.activate
     def test_includes_api_key_header(self):
         """_make_request should include the API key in headers."""
         responses.get(
@@ -217,18 +231,71 @@ class TestCreateSession:
     """Tests for create_session method."""
 
     @responses.activate
-    def test_create_session_returns_session(self):
-        """create_session should return the created session."""
+    def test_create_session_with_prompt_only(self):
+        """create_session should send prompt in request body."""
         responses.post(
             f"{BASE_URL}/sessions",
-            json={"session": {"id": "sess1", "source_id": "src1"}},
-            status=201,
+            json={
+                "name": "sessions/1234567",
+                "id": "abc123",
+                "prompt": "Add tests",
+                "state": "QUEUED",
+            },
+            status=200,
         )
 
         client = JulesAPIClient(api_key="test-key", verbose=False)
-        result = client.create_session(source_id="src1")
+        result = client.create_session(prompt="Add tests")
 
-        assert result == {"session": {"id": "sess1", "source_id": "src1"}}
+        assert result["id"] == "abc123"
+        assert result["state"] == "QUEUED"
+
+        # Verify request body
+        request_body = json.loads(responses.calls[0].request.body)
+        assert request_body == {"prompt": "Add tests"}
+
+    @responses.activate
+    def test_create_session_with_all_options(self):
+        """create_session should include all optional fields."""
+        responses.post(
+            f"{BASE_URL}/sessions",
+            json={"name": "sessions/1234567", "id": "abc123", "state": "QUEUED"},
+            status=200,
+        )
+
+        client = JulesAPIClient(api_key="test-key", verbose=False)
+        result = client.create_session(
+            prompt="Add tests",
+            title="Auth tests",
+            source="sources/github-myorg-myrepo",
+            starting_branch="main",
+            require_plan_approval=True,
+            automation_mode="AUTO_CREATE_PR",
+        )
+
+        request_body = json.loads(responses.calls[0].request.body)
+        assert request_body["prompt"] == "Add tests"
+        assert request_body["title"] == "Auth tests"
+        assert request_body["sourceContext"]["source"] == "sources/github-myorg-myrepo"
+        assert request_body["sourceContext"]["githubRepoContext"]["startingBranch"] == "main"
+        assert request_body["requirePlanApproval"] is True
+        assert request_body["automationMode"] == "AUTO_CREATE_PR"
+
+    @responses.activate
+    def test_create_session_with_source_no_branch(self):
+        """create_session should handle source without branch."""
+        responses.post(
+            f"{BASE_URL}/sessions",
+            json={"name": "sessions/1234567", "id": "abc123", "state": "QUEUED"},
+            status=200,
+        )
+
+        client = JulesAPIClient(api_key="test-key", verbose=False)
+        client.create_session(prompt="Add tests", source="sources/github-myorg-myrepo")
+
+        request_body = json.loads(responses.calls[0].request.body)
+        assert request_body["sourceContext"] == {"source": "sources/github-myorg-myrepo"}
+        assert "githubRepoContext" not in request_body["sourceContext"]
 
 
 class TestListSessions:
@@ -239,28 +306,28 @@ class TestListSessions:
         """list_sessions should return a list of sessions."""
         responses.get(
             f"{BASE_URL}/sessions",
-            json={"sessions": [{"id": "sess1"}]},
+            json={"sessions": [{"id": "sess1", "state": "COMPLETED"}]},
             status=200,
         )
 
         client = JulesAPIClient(api_key="test-key", verbose=False)
         result = client.list_sessions()
 
-        assert result == {"sessions": [{"id": "sess1"}]}
+        assert result == {"sessions": [{"id": "sess1", "state": "COMPLETED"}]}
 
     @responses.activate
-    def test_list_sessions_with_status_filter(self):
-        """list_sessions should pass status filter."""
+    def test_list_sessions_with_page_size(self):
+        """list_sessions should pass pageSize parameter."""
         responses.get(
-            f"{BASE_URL}/sessions?status=active",
-            json={"sessions": []},
+            f"{BASE_URL}/sessions?pageSize=10",
+            json={"sessions": [], "nextPageToken": "abc"},
             status=200,
         )
 
         client = JulesAPIClient(api_key="test-key", verbose=False)
-        result = client.list_sessions(status="active")
+        result = client.list_sessions(pageSize=10)
 
-        assert result == {"sessions": []}
+        assert result == {"sessions": [], "nextPageToken": "abc"}
 
 
 class TestGetSession:
@@ -271,14 +338,52 @@ class TestGetSession:
         """get_session should return the session details."""
         responses.get(
             f"{BASE_URL}/sessions/sess1",
-            json={"session": {"id": "sess1", "status": "active"}},
+            json={
+                "name": "sessions/sess1",
+                "id": "sess1",
+                "state": "COMPLETED",
+                "title": "Test session",
+            },
             status=200,
         )
 
         client = JulesAPIClient(api_key="test-key", verbose=False)
         result = client.get_session("sess1")
 
-        assert result == {"session": {"id": "sess1", "status": "active"}}
+        assert result["id"] == "sess1"
+        assert result["state"] == "COMPLETED"
+
+
+class TestDeleteSession:
+    """Tests for delete_session method."""
+
+    @responses.activate
+    def test_delete_session_returns_empty(self):
+        """delete_session should return empty dict on success."""
+        responses.delete(
+            f"{BASE_URL}/sessions/sess1",
+            body="",
+            status=200,
+        )
+
+        client = JulesAPIClient(api_key="test-key", verbose=False)
+        result = client.delete_session("sess1")
+
+        assert result == {}
+
+    @responses.activate
+    def test_delete_session_not_found(self):
+        """delete_session should raise ResourceNotFoundError on 404."""
+        responses.delete(
+            f"{BASE_URL}/sessions/nonexistent",
+            json={"error": "Session not found"},
+            status=404,
+        )
+
+        client = JulesAPIClient(api_key="test-key", verbose=False)
+
+        with pytest.raises(ResourceNotFoundError):
+            client.delete_session("nonexistent")
 
 
 class TestApprovePlan:
@@ -286,17 +391,21 @@ class TestApprovePlan:
 
     @responses.activate
     def test_approve_plan_returns_success(self):
-        """approve_plan should return success response."""
+        """approve_plan should POST to :approvePlan endpoint."""
         responses.post(
-            f"{BASE_URL}/sessions/sess1/approve",
-            json={"success": True},
+            f"{BASE_URL}/sessions/sess1:approvePlan",
+            json={},
             status=200,
         )
 
         client = JulesAPIClient(api_key="test-key", verbose=False)
         result = client.approve_plan("sess1")
 
-        assert result == {"success": True}
+        assert result == {}
+
+        # Verify empty JSON body was sent
+        request_body = json.loads(responses.calls[0].request.body)
+        assert request_body == {}
 
 
 class TestListActivities:
@@ -322,14 +431,18 @@ class TestSendMessage:
 
     @responses.activate
     def test_send_message_returns_response(self):
-        """send_message should return the agent response."""
+        """send_message should POST to :sendMessage with prompt field."""
         responses.post(
-            f"{BASE_URL}/sessions/sess1/messages",
-            json={"response": {"content": "Hello"}},
+            f"{BASE_URL}/sessions/sess1:sendMessage",
+            json={},
             status=200,
         )
 
         client = JulesAPIClient(api_key="test-key", verbose=False)
         result = client.send_message("sess1", "Hello")
 
-        assert result == {"response": {"content": "Hello"}}
+        assert result == {}
+
+        # Verify prompt field in request body
+        request_body = json.loads(responses.calls[0].request.body)
+        assert request_body == {"prompt": "Hello"}

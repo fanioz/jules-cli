@@ -47,21 +47,21 @@ class TestHelpSystem:
         assert "Manage sessions" in result.output
 
     def test_sessions_create_help_shows_syntax(self):
-        """sessions create help should show SOURCE_ID argument."""
+        """sessions create help should show --prompt option."""
         runner = CliRunner()
         result = runner.invoke(cli, ["sessions", "create", "--help"])
 
         assert result.exit_code == 0
-        assert "SOURCE_ID" in result.output or "source" in result.output.lower()
+        assert "--prompt" in result.output or "-p" in result.output
         assert "Create" in result.output
 
-    def test_sessions_list_help_shows_status_option(self):
-        """sessions list help should show --status option."""
+    def test_sessions_list_help_shows_page_size_option(self):
+        """sessions list help should show --page-size option."""
         runner = CliRunner()
         result = runner.invoke(cli, ["sessions", "list", "--help"])
 
         assert result.exit_code == 0
-        assert "--status" in result.output or "status" in result.output.lower()
+        assert "--page-size" in result.output or "page" in result.output.lower()
 
     def test_sessions_get_help_shows_syntax(self):
         """sessions get help should show SESSION_ID argument."""
