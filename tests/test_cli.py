@@ -76,10 +76,16 @@ class TestMissingAPIKey:
         """Commands should fail gracefully when no API key is provided."""
         runner = CliRunner()
 
-        # Clear environment
+        # Clear environment and config file
         import os
+        from jules_cli.config import ConfigManager
         env = os.environ.copy()
         env.pop("JULES_API_KEY", None)
+        
+        # Ensure no config file exists for the test
+        config_manager = ConfigManager()
+        if os.path.exists(config_manager.config_file):
+            os.remove(config_manager.config_file)
 
         result = runner.invoke(cli, ["sources", "list"], env=env)
         # Should fail with error message about API key

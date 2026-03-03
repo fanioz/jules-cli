@@ -11,7 +11,7 @@ from jules_cli.exceptions import ConfigurationError, JulesAPIError
 from jules_cli.formatter import OutputFormatter
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.option(
     "--api-key",
     "-k",
@@ -58,6 +58,11 @@ def cli(ctx, api_key, format, verbose):
             ctx.obj["actual_api_key"] = None
     else:
         ctx.obj["actual_api_key"] = api_key
+
+    if ctx.invoked_subcommand is None:
+        click.echo(ctx.get_help())
+        sys.exit(0)
+
 
 
 @cli.group()
@@ -141,10 +146,11 @@ def sessions_create(ctx, prompt, title, source, branch, require_approval, auto_p
 
 
 @sessions.command("list")
+@click.option("--status", type=click.Choice(["active", "completed", "failed", "pending"], case_sensitive=False), default=None, help="Filter by session status")
 @click.option("--page-size", type=int, default=None, help="Number of sessions to return (1-100, default: 30)")
 @click.option("--page-token", default=None, help="Page token from a previous list response")
 @click.pass_context
-def sessions_list(ctx, page_size, page_token):
+def sessions_list(ctx, status, page_size, page_token):
     """List sessions."""
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
@@ -156,6 +162,8 @@ def sessions_list(ctx, page_size, page_token):
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
         params = {}
+        if status is not None:
+            params["status"] = status
         if page_size is not None:
             params["pageSize"] = page_size
         if page_token is not None:

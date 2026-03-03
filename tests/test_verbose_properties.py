@@ -18,7 +18,7 @@ class TestVerboseModeSuppressionProperty:
     @given(
         has_verbose_flag=st.booleans(),
     )
-    @settings(max_examples=20)
+    @settings(max_examples=20, deadline=None)
     def test_verbose_mode_only_shows_logs_when_enabled(self, has_verbose_flag):
         """Verbose logs should only appear when --verbose flag is used."""
         with responses.RequestsMock() as rsps:

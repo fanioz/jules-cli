@@ -44,7 +44,7 @@ class TestChronologicalOrderingProperty:
         activities=st.lists(
             st.fixed_dictionaries({
                 "id": st.text(min_size=1, alphabet=st.characters(whitelist_categories=['L', 'N'])),
-                "timestamp": st.datetimes(min_value=datetime(2020, 1, 1), max_value=datetime(2025, 12, 31)),
+                "createTime": st.datetimes(min_value=datetime(2020, 1, 1), max_value=datetime(2025, 12, 31)),
             }),
             min_size=1,
             max_size=20,
@@ -52,10 +52,10 @@ class TestChronologicalOrderingProperty:
     )
     @settings(max_examples=50)
     def test_activities_sorted_chronologically(self, activities):
-        """Activities should be formatted without errors regardless of timestamp order."""
+        """Activities should be formatted without errors regardless of createTime order."""
         # Convert datetime objects to ISO format strings
         for activity in activities:
-            activity["timestamp"] = activity["timestamp"].isoformat() + "Z"
+            activity["createTime"] = activity["createTime"].isoformat() + "Z"
 
         import random
         random.shuffle(activities)  # Randomize order

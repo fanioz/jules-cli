@@ -40,7 +40,7 @@ class OutputFormatter:
                 return "No sources found."
             headers = ["ID", "Name"]
             rows = [[s.get("id", ""), s.get("name", "")] for s in sources]
-            return tabulate(rows, headers=headers, tablefmt="grid")
+            return tabulate(rows, headers=headers, tablefmt="grid", disable_numparse=True)
 
         # Plain format
         if not sources:
@@ -75,7 +75,7 @@ class OutputFormatter:
                 s.get("state", ""),
                 s.get("createTime", ""),
             ] for s in sessions]
-            return tabulate(rows, headers=headers, tablefmt="grid")
+            return tabulate(rows, headers=headers, tablefmt="grid", disable_numparse=True)
 
         # Plain format
         if not sessions:
@@ -154,18 +154,18 @@ class OutputFormatter:
         # For table and plain, sort chronologically (oldest first)
         sorted_activities = sorted(
             activities,
-            key=lambda a: a.get("timestamp", "")
+            key=lambda a: a.get("createTime", "")
         )
 
         if self.format == "table":
             if not sorted_activities:
                 return "No activities found."
-            headers = ["ID", "Time", "Type", "Description"]
+            headers = ["ID", "Time", "Originator", "Description"]
             rows = [[
-                a.get("id", ""),
-                a.get("timestamp", ""),
-                a.get("type", ""),
-                a.get("description", "")[:50],  # Truncate long descriptions
+                f"\u200b{a.get('id', '')}" if a.get("id") else "",
+                str(a.get("createTime", "")),
+                str(a.get("originator", "")),
+                str(a.get("description", "")[:50]),  # Truncate long descriptions
             ] for a in sorted_activities]
             return tabulate(rows, headers=headers, tablefmt="grid")
 
@@ -174,7 +174,11 @@ class OutputFormatter:
             return "No activities found."
         lines = [f"Activities ({len(sorted_activities)}):"]
         for activity in sorted_activities:
-            lines.append(f"  - [{activity.get('timestamp', '')}] {activity.get('type', '')}")
+            originator = activity.get("originator", "")
+            description = activity.get("description", "")
+            create_time = activity.get("createTime", "")
+            origin_tag = f" ({originator})" if originator else ""
+            lines.append(f"  - [{create_time}] ({activity.get('id', '')}){origin_tag} {description}")
         return "\n".join(lines)
 
     def format_message_response(self, data: Dict[str, Any]) -> str:

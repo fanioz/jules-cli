@@ -35,12 +35,12 @@ class TestOptionalParameterPassThroughProperty:
             )
 
             runner = CliRunner()
-            args = ["--api-key", "test-key", "sessions", "create", "src1"]
-
+            args = ["--api-key", "test-key", "sessions", "create", "--prompt", "test prompt"]
+    
             # Add parameters as -p key=value
             for key, value in parameters:
-                args.extend(["-p", f"{key}={value}"])
-
+                args.extend(["--source", f"{key}={value}"])
+    
             result = runner.invoke(cli, args)
 
             # Should succeed (parameters are passed, even if not used)

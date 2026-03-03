@@ -103,8 +103,8 @@ class TestFormatActivities:
         """format_activities should return valid JSON when format is json."""
         formatter = OutputFormatter("json")
         data = {"activities": [
-            {"id": "act1", "timestamp": "2024-01-01T10:00:00Z"},
-            {"id": "act2", "timestamp": "2024-01-01T09:00:00Z"}
+            {"id": "act1", "createTime": "2024-01-01T10:00:00Z"},
+            {"id": "act2", "createTime": "2024-01-01T09:00:00Z"}
         ]}
 
         result = formatter.format_activities(data)
@@ -116,8 +116,8 @@ class TestFormatActivities:
         """format_activities should order activities chronologically (oldest first)."""
         formatter = OutputFormatter("table")
         data = {"activities": [
-            {"id": "act1", "timestamp": "2024-01-01T10:00:00Z"},
-            {"id": "act2", "timestamp": "2024-01-01T09:00:00Z"}
+            {"id": "act1", "createTime": "2024-01-01T10:00:00Z"},
+            {"id": "act2", "createTime": "2024-01-01T09:00:00Z"}
         ]}
 
         result = formatter.format_activities(data)

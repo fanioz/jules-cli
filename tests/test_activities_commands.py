@@ -16,7 +16,7 @@ class TestActivitiesListCommand:
         """activities list should display activities for a session."""
         responses.get(
             f"{BASE_URL}/sessions/sess1/activities",
-            json={"activities": [{"id": "act1", "type": "plan", "timestamp": "2024-01-01T10:00:00Z"}]},
+            json={"activities": [{"id": "act1", "originator": "agent", "description": "Plan generated", "createTime": "2024-01-01T10:00:00Z"}]},
             status=200,
         )
 
@@ -46,7 +46,7 @@ class TestActivitiesListCommand:
         """activities list --format table should output a table."""
         responses.get(
             f"{BASE_URL}/sessions/sess1/activities",
-            json={"activities": [{"id": "act1", "timestamp": "2024-01-01T10:00:00Z"}]},
+            json={"activities": [{"id": "act1", "originator": "system", "description": "Session started", "createTime": "2024-01-01T10:00:00Z"}]},
             status=200,
         )
 
@@ -78,8 +78,8 @@ class TestActivitiesListCommand:
         responses.get(
             f"{BASE_URL}/sessions/sess1/activities",
             json={"activities": [
-                {"id": "act2", "timestamp": "2024-01-01T10:00:00Z"},
-                {"id": "act1", "timestamp": "2024-01-01T09:00:00Z"}
+                {"id": "act2", "originator": "agent", "description": "Plan generated", "createTime": "2024-01-01T10:00:00Z"},
+                {"id": "act1", "originator": "system", "description": "Session started", "createTime": "2024-01-01T09:00:00Z"}
             ]},
             status=200,
         )

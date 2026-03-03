@@ -56,9 +56,19 @@ class ConfigManager:
             with open(self.config_file, "wb") as f:
                 tomli_w.dump(config_data, f)
         else:
-            # Fallback: write simple TOML manually
-            with open(self.config_file, "w") as f:
-                f.write(f'api_key = "{api_key}"\n')
+            # Fallback: write simple TOML manually, with escaping
+            with open(self.config_file, "w", encoding="utf-8") as f:
+                # Escape special characters for TOML basic string format
+                escaped_api_key = (
+                    api_key.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\b", "\\b")
+                    .replace("\t", "\\t")
+                    .replace("\n", "\\n")
+                    .replace("\f", "\\f")
+                    .replace("\r", "\\r")
+                )
+                f.write(f'api_key = "{escaped_api_key}"\n')
                 f.write(f'format = "{format}"\n')
 
     def load_config(self) -> dict:
