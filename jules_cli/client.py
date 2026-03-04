@@ -4,8 +4,6 @@ import logging
 import re
 from typing import Optional
 
-import requests
-
 from jules_cli.constants import (
     API_KEY_HEADER,
     BASE_URL,
@@ -101,6 +99,7 @@ class JulesAPIClient:
             if json:
                 logger.debug(f"Body: {json}")
 
+        import requests  # Lazy import to improve CLI startup time
         try:
             response = requests.request(
                 method=method,
