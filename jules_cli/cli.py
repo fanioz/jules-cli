@@ -5,10 +5,8 @@ import sys
 import click
 
 from jules_cli import __version__
-from jules_cli.client import JulesAPIClient
 from jules_cli.config import ConfigManager
-from jules_cli.exceptions import ConfigurationError, JulesAPIError
-from jules_cli.formatter import OutputFormatter
+from jules_cli.exceptions import ConfigurationError
 
 
 @click.group(invoke_without_command=True)
@@ -76,6 +74,10 @@ def sources(ctx):
 @click.pass_context
 def sources_list(ctx):
     """List available sources."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -113,6 +115,10 @@ def sessions(ctx):
 @click.pass_context
 def sessions_create(ctx, prompt, title, source, branch, require_approval, auto_pr):
     """Create a new session to start a coding task."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -152,6 +158,10 @@ def sessions_create(ctx, prompt, title, source, branch, require_approval, auto_p
 @click.pass_context
 def sessions_list(ctx, status, page_size, page_token):
     """List sessions."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -185,6 +195,10 @@ def sessions_list(ctx, status, page_size, page_token):
 @click.pass_context
 def sessions_get(ctx, session_id):
     """Get session details."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -211,6 +225,10 @@ def sessions_get(ctx, session_id):
 @click.pass_context
 def sessions_delete(ctx, session_id, yes):
     """Delete a session."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -237,6 +255,10 @@ def sessions_delete(ctx, session_id, yes):
 @click.pass_context
 def sessions_approve(ctx, session_id):
     """Approve a pending plan."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -267,6 +289,10 @@ def activities(ctx):
 @click.pass_context
 def activities_list(ctx, session_id):
     """List activities for a session."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
@@ -300,6 +326,10 @@ def agent(ctx):
 @click.pass_context
 def agent_send(ctx, session_id, message):
     """Send a message to the agent."""
+    # Lazy import to improve CLI startup performance
+    from jules_cli.client import JulesAPIClient
+    from jules_cli.exceptions import JulesAPIError
+    from jules_cli.formatter import OutputFormatter
     api_key = ctx.obj.get("actual_api_key")
     if not api_key:
         click.echo("Error: API key not found. Use --api-key, JULES_API_KEY env var, or 'jules config init'", err=True)
