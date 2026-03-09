@@ -5,10 +5,8 @@ import sys
 import click
 
 from jules_cli import __version__
-from jules_cli.client import JulesAPIClient
 from jules_cli.config import ConfigManager
 from jules_cli.exceptions import ConfigurationError, JulesAPIError
-from jules_cli.formatter import OutputFormatter
 
 
 @click.group(invoke_without_command=True)
@@ -53,7 +51,7 @@ def cli(ctx, api_key, format, verbose):
             config_manager = ConfigManager()
             actual_api_key = config_manager.get_api_key(cli_arg_key=None)
             ctx.obj["actual_api_key"] = actual_api_key
-        except ConfigurationError as e:
+        except ConfigurationError:
             # Don't fail immediately - commands might not need API key
             ctx.obj["actual_api_key"] = None
     else:
@@ -82,6 +80,8 @@ def sources_list(ctx):
         sys.exit(1)
 
     try:
+        from jules_cli.client import JulesAPIClient
+        from jules_cli.formatter import OutputFormatter
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
@@ -90,6 +90,7 @@ def sources_list(ctx):
         click.echo(output)
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
@@ -119,6 +120,8 @@ def sessions_create(ctx, prompt, title, source, branch, require_approval, auto_p
         sys.exit(1)
 
     try:
+        from jules_cli.client import JulesAPIClient
+        from jules_cli.formatter import OutputFormatter
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
@@ -139,6 +142,7 @@ def sessions_create(ctx, prompt, title, source, branch, require_approval, auto_p
         click.echo(output)
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
@@ -158,6 +162,8 @@ def sessions_list(ctx, status, page_size, page_token):
         sys.exit(1)
 
     try:
+        from jules_cli.client import JulesAPIClient
+        from jules_cli.formatter import OutputFormatter
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
@@ -174,6 +180,7 @@ def sessions_list(ctx, status, page_size, page_token):
         click.echo(output)
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
@@ -191,6 +198,8 @@ def sessions_get(ctx, session_id):
         sys.exit(1)
 
     try:
+        from jules_cli.client import JulesAPIClient
+        from jules_cli.formatter import OutputFormatter
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
@@ -199,6 +208,7 @@ def sessions_get(ctx, session_id):
         click.echo(output)
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
@@ -220,12 +230,14 @@ def sessions_delete(ctx, session_id, yes):
         click.confirm(f"Are you sure you want to delete session {session_id}?", abort=True)
 
     try:
+        from jules_cli.client import JulesAPIClient
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
 
         client.delete_session(session_id)
         click.echo(f"Session {session_id} deleted successfully.")
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
@@ -243,12 +255,14 @@ def sessions_approve(ctx, session_id):
         sys.exit(1)
 
     try:
+        from jules_cli.client import JulesAPIClient
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
 
-        data = client.approve_plan(session_id)
+        client.approve_plan(session_id)
         click.echo(f"Plan approved for session {session_id}")
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
@@ -273,6 +287,8 @@ def activities_list(ctx, session_id):
         sys.exit(1)
 
     try:
+        from jules_cli.client import JulesAPIClient
+        from jules_cli.formatter import OutputFormatter
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
@@ -281,6 +297,7 @@ def activities_list(ctx, session_id):
         click.echo(output)
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
@@ -309,6 +326,8 @@ def agent_send(ctx, session_id, message):
         message = sys.stdin.read()
 
     try:
+        from jules_cli.client import JulesAPIClient
+        from jules_cli.formatter import OutputFormatter
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
 
@@ -317,6 +336,7 @@ def agent_send(ctx, session_id, message):
         click.echo(output)
 
     except JulesAPIError as e:
+        from jules_cli.formatter import OutputFormatter
         formatter = OutputFormatter(ctx.obj.get("format", "plain"))
         error_output = formatter.format_error(str(e))
         click.echo(error_output, err=True)
