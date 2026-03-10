@@ -136,3 +136,8 @@ jules
 # Virtual environments
 .venv/
 venv/
+
+# Development tool configurations (developer-specific)
+.claude/
+.jules/
+.kiro/
