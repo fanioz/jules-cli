@@ -1,4 +1,8 @@
-"""CLI command definitions."""
+"""CLI command definitions.
+
+Note: Heavy dependencies (requests, tabulate) are imported locally within
+command functions to optimize CLI startup time. See .jules/bolt.md for details.
+"""
 
 import sys
 
@@ -93,8 +97,8 @@ def sources_list(ctx):
         click.echo(output)
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
@@ -147,8 +151,8 @@ def sessions_create(ctx, prompt, title, source, branch, require_approval, auto_p
         click.echo(output)
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
@@ -187,8 +191,8 @@ def sessions_list(ctx, status, page_size, page_token):
         click.echo(output)
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
@@ -217,8 +221,8 @@ def sessions_get(ctx, session_id):
         click.echo(output)
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
@@ -249,8 +253,8 @@ def sessions_delete(ctx, session_id, yes):
         click.echo(f"Session {session_id} deleted successfully.")
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
@@ -277,8 +281,8 @@ def sessions_approve(ctx, session_id):
         click.echo(f"Plan approved for session {session_id}")
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
@@ -314,8 +318,8 @@ def activities_list(ctx, session_id):
         click.echo(output)
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
@@ -355,8 +359,8 @@ def agent_send(ctx, session_id, message):
         click.echo(output)
 
     except JulesAPIError as e:
-        formatter = OutputFormatter(ctx.obj.get("format", "plain"))
-        error_output = formatter.format_error(str(e))
+        fmt = locals().get("formatter") or OutputFormatter(ctx.obj.get("format", "plain"))
+        error_output = fmt.format_error(str(e))
         click.echo(error_output, err=True)
         sys.exit(1)
 
