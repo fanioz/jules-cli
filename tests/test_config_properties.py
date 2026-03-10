@@ -5,12 +5,10 @@ import tempfile
 from pathlib import Path
 from unittest import mock
 
-import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from jules_cli.config import ConfigManager
-from jules_cli.exceptions import ConfigurationError
 
 
 class TestAPIKeyPriorityProperty:

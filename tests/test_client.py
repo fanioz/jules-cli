@@ -4,7 +4,6 @@ import json
 from unittest import mock
 
 import pytest
-import requests
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import Timeout
 
@@ -14,7 +13,6 @@ from jules_cli.client import JulesAPIClient
 from jules_cli.constants import BASE_URL
 from jules_cli.exceptions import (
     AuthenticationError,
-    JulesAPIError,
     NetworkError,
     RateLimitError,
     ResourceNotFoundError,
@@ -264,7 +262,7 @@ class TestCreateSession:
         )
 
         client = JulesAPIClient(api_key="test-key", verbose=False)
-        result = client.create_session(
+        client.create_session(
             prompt="Add tests",
             title="Auth tests",
             source="sources/github-myorg-myrepo",

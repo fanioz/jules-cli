@@ -267,7 +267,7 @@ def sessions_approve(ctx, session_id):
     try:
         client = JulesAPIClient(api_key=api_key, verbose=ctx.obj.get("verbose", False))
 
-        data = client.approve_plan(session_id)
+        client.approve_plan(session_id)
         click.echo(f"Plan approved for session {session_id}")
 
     except JulesAPIError as e:

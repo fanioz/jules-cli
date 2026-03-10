@@ -1,7 +1,6 @@
 """Property-based tests for verbose mode."""
 
 from click.testing import CliRunner
-from unittest import mock
 
 from hypothesis import given, settings
 from hypothesis import strategies as st

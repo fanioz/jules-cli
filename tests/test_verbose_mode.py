@@ -23,7 +23,7 @@ class TestVerboseMode:
 
         runner = CliRunner()
 
-        with mock.patch("jules_cli.client.logger") as mock_logger:
+        with mock.patch("jules_cli.client.logger"):
             result = runner.invoke(cli, ["--api-key", "test-key", "--verbose", "sources", "list"])
 
             # With verbose, logger should be called

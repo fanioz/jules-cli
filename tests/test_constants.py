@@ -1,6 +1,5 @@
 """Tests for API constants."""
 
-import pytest
 
 from jules_cli.constants import (
     BASE_URL,
