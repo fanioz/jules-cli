@@ -1,6 +1,6 @@
 <div align="center">
 
-# Jules CLI
+# junes
 
 **A command-line interface for the Jules REST API.**
 
