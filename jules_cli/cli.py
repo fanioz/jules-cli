@@ -82,7 +82,6 @@ def sources_list(ctx):
         sys.exit(1)
 
     # Lazy imports to speed up CLI startup time
-    # Lazy imports to speed up CLI startup time
     from jules_cli.client import JulesAPIClient
     from jules_cli.formatter import OutputFormatter
     from jules_cli.exceptions import JulesAPIError
