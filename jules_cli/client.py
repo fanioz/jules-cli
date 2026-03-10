@@ -41,7 +41,11 @@ def _redact_api_key(text: str, api_key: str) -> str:
 
 
 class JulesAPIClient:
-    """Client for interacting with the Jules API."""
+    """Client for interacting with the Jules API.
+
+    Note: The `requests` library is lazily imported in `_make_request` to improve
+    CLI startup time for commands that don't make API calls (e.g., `--help`).
+    """
 
     def __init__(self, api_key: str, base_url: str = BASE_URL, verbose: bool = False):
         """
