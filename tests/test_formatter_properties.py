@@ -3,7 +3,7 @@
 import json
 from datetime import datetime
 
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from jules_cli.formatter import OutputFormatter

@@ -2,7 +2,6 @@
 
 import json
 
-import pytest
 
 from jules_cli.formatter import OutputFormatter
 
